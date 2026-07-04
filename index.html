@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicción de Engagement & Ciclo de Vida CRISP-ML</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --text-color: #f3f4f6;
+            --accent-color: #00f2fe;
+            --secondary-accent: #4facfe;
+            --card-bg: rgba(17, 25, 40, 0.75);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Ambient Glows */
+        .glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0) 70%);
+            z-index: -1;
+            filter: blur(40px);
+            pointer-events: none;
+        }
+        .glow-1 { top: 10%; left: 5%; }
+        .glow-2 { top: 60%; right: 5%; }
+
+        /* Container & Navigation */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            padding: 2rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5rem 0;
+            gap: 4rem;
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #ffffff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.85rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+            color: #0b0f19;
+            box-shadow: 0 8px 30px rgba(0, 242, 254, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 242, 254, 0.5);
+        }
+
+        .hero-image-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .hero-image {
+            width: 100%;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s ease;
+        }
+
+        .hero-image-container::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+            z-index: -2;
+            border-radius: 25px;
+            filter: blur(20px);
+            opacity: 0.4;
+        }
+
+        /* CRISP-ML Timeline Section */
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 4rem;
+            background: linear-gradient(to right, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .timeline {
+            position: relative;
+            margin: 5rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent-color), var(--secondary-accent));
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-badge {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            background-color: var(--bg-color);
+            border: 3px solid var(--accent-color);
+            border-radius: 50%;
+            z-index: 10;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        .timeline-card {
+            width: 45%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .timeline-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 12px 40px rgba(0, 242, 254, 0.15);
+        }
+
+        .timeline-card h3 {
+            font-size: 1.35rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .timeline-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Integration Section */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(17, 25, 40, 0.95) 0%, rgba(11, 15, 25, 0.9) 100%);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 4rem;
+            text-align: center;
+            margin: 6rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.2) 0%, rgba(79, 172, 254, 0) 70%);
+            filter: blur(20px);
+        }
+
+        .cta-title {
+            font-size: 2.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-desc {
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 3rem 0;
+            }
+
+            .hero-subtitle {
+                margin: 0 auto 2.5rem;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item {
+                flex-direction: row !important;
+                margin-left: 40px;
+            }
+
+            .timeline-card {
+                width: 100%;
+            }
+
+            .timeline-badge {
+                left: -20px;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="container">
+        <!-- Navigation Header -->
+        <header>
+            <div class="logo">CRISP-ML Hub</div>
+            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-muted);">Proyecto Predictivo</div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Modelado Predictivo con <span>Realidad Aumentada</span></h1>
+                <p class="hero-subtitle">Descubre cómo implementamos el marco CRISP-ML(Q) para crear un modelo de Machine Learning supervisado que predice el engagement de usuarios globales.</p>
+                <div class="btn-group" style="justify-content: flex-start;">
+                    <a href="http://localhost:8501" target="_blank" class="btn btn-primary">Abrir Streamlit App</a>
+                </div>
+            </div>
+            <div class="hero-image-container">
+                <img src="ar_dashboard.png" alt="Interfaz Holográfica de Realidad Aumentada de Inteligencia Artificial" class="hero-image">
+            </div>
+        </section>
+
+        <!-- CRISP-ML Lifecycle Section -->
+        <section>
+            <h2 class="section-title">El Ciclo de Vida del Proyecto (CRISP-ML)</h2>
+            <div class="timeline">
+                <!-- Step 1 -->
+                <div class="timeline-item">
+                    <div class="timeline-badge"></div>
+                    <div class="timeline-card">
+                        <h3>1. Comprensión del Negocio (Business Understanding)</h3>
+                        <p>Definición del problema de la falta de personalización de marketing. Establecimiento del objetivo de predecir el score de engagement para segmentación de alto valor.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="timeline-item">
+                    <div class="timeline-badge"></div>
+                    <div class="timeline-card">
+                        <h3>2. Comprensión de los Datos (Data Understanding)</h3>
+                        <p>Análisis de las variables sociodemográficas y espaciales del dataset <code>sampledata.csv</code>. Realización de un EDA completo analizando correlaciones y patrones espaciales.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="timeline-item">
+                    <div class="timeline-badge"></div>
+                    <div class="timeline-card">
+                        <h3>3. Preparación de los Datos (Data Preparation)</h3>
+                        <p>Eliminación de ruido/datos personales, imputación robusta de nulos en edad (mediana) y geolocalización (media), y creación de un pipeline de transformación con OneHotEncoder y StandardScaler.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="timeline-item">
+                    <div class="timeline-badge"></div>
+                    <div class="timeline-card">
+                        <h3>4. Modelado (Modeling)</h3>
+                        <p>Entrenamiento y optimización de hiperparámetros de un regresor Random Forest y comparación contra una Regresión Lineal de referencia.</p>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="timeline-item">
+                    <div class="timeline-badge"></div>
+                    <div class="timeline-card">
+                        <h3>5. Evaluación (Evaluation)</h3>
+                        <p>Validación de los modelos utilizando métricas clave: R², MAE y RMSE. Análisis del comportamiento en test e identificación de variables de mayor peso predictivo.</p>
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="timeline-item">
+                    <div class="timeline-badge"></div>
+                    <div class="timeline-card">
+                        <h3>6. Despliegue (Deployment)</h3>
+                        <p>Serialización del pipeline óptimo a <code>model.joblib</code> para que pueda responder a predicciones en tiempo real en la aplicación interactiva de Streamlit.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <h2 class="cta-title">Explora los Componentes del Proyecto</h2>
+            <p class="cta-desc">Accede a las diferentes partes del código fuente, el análisis de datos original y la aplicación interactiva desplegada en tu ordenador local.</p>
+            <div class="btn-group">
+                <a href="ETL_+_EDA_Estu.ipynb" download class="btn btn-secondary">Ver Cuaderno (.ipynb)</a>
+                <a href="app.py" target="_blank" class="btn btn-secondary">Ver Código de App (.py)</a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 - Proyecto Streamlit, ML & Realidad Aumentada. Creado con Antigravity.</p>
+        </footer>
+    </div>
+</body>
+</html>
